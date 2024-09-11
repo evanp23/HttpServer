@@ -1,4 +1,6 @@
 package HttpServer.JSON;
 
-public class JsonArray {
+import java.util.ArrayList;
+
+public class JsonArray extends ArrayList<Object> {
 }

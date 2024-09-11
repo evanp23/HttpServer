@@ -1,8 +1,7 @@
 package HttpServer.Decoder;
 
 import HttpServer.Enums.HttpMethod;
-import HttpServer.JSON.JSONToken;
-import HttpServer.JSON.JSONTokenizer;
+import HttpServer.JSON.*;
 import HttpServer.Request.HttpRequest;
 
 import java.io.InputStream;
@@ -114,10 +113,9 @@ public class HttpDecoder {
             if(!bodyLine.isBlank()) requestBody += bodyLine;
         }
 
-        JSONTokenizer tokenizer = new JSONTokenizer(requestBody);
-
         try {
-            List<JSONToken> jsonTokens = tokenizer.tokenizeJSON();
+            JsonObject jsonObject = new JsonObject(requestBody);
+            System.out.println("j");
         } catch (Exception e){
             System.out.println(e);
         }

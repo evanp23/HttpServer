@@ -1,7 +1,9 @@
 package HttpServer.JSON;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,9 +15,8 @@ public class JSONTokenizer {
         this.json = json;
     }
 
-    public List<JSONToken> tokenizeJSON() throws Exception {
-        int curr = 0;
-        List<JSONToken> tokens = new ArrayList<>();
+    public Queue<JSONToken> tokenizeJSON() throws Exception {
+        Queue<JSONToken> tokens = new LinkedList<>();
 
 
         for(int i = 0; i < json.length(); i++){
@@ -53,7 +54,7 @@ public class JSONTokenizer {
             else if(matcher.matches()){
                 String value = "";
                 while(matcher.matches()){
-                    value+= input;
+                    value += input;
                     input = json.charAt(++i);
                     matcher = pattern.matcher(Character.toString(input));
                 }
