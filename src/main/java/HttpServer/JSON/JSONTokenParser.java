@@ -47,14 +47,10 @@ public class JSONTokenParser {
         switch(token.getTokenType()){
             case STRING:
                 return String.valueOf(token.getValue());
-            case NUMBER:
-                if(token.getValue() instanceof Integer){
-                    return Integer.parseInt(token.getValue().toString());
-                }
-                else if(token.getValue() instanceof Double){
-                    return Double.parseDouble(token.getValue().toString());
-                }
-                break;
+            case INTEGER:
+                return Integer.parseInt(token.getValue().toString());
+            case DOUBLE:
+                return Double.parseDouble(token.getValue().toString());
             case TRUE:
                 return true;
             case FALSE:
@@ -68,6 +64,5 @@ public class JSONTokenParser {
             default:
                 throw new Exception("Unexpected token - Type: " + token.getTokenType() + ", value: " + token.getValue());
         }
-        return null;
     }
 }

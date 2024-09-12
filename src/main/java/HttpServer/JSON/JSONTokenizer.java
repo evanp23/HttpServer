@@ -1,9 +1,7 @@
 package HttpServer.JSON;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +19,7 @@ public class JSONTokenizer {
 
         for(int i = 0; i < json.length(); i++){
             char input = json.charAt(i);
-            Pattern pattern = Pattern.compile("[\\d\\w]");
+            Pattern pattern = Pattern.compile("[\\d\\w.]");
             Matcher matcher = pattern.matcher(Character.toString(input));
 
             if(input == '{'){
@@ -53,18 +51,24 @@ public class JSONTokenizer {
             }
             else if(matcher.matches()){
                 String value = "";
-                while(matcher.matches()){
+                while(true){
                     value += input;
                     input = json.charAt(++i);
                     matcher = pattern.matcher(Character.toString(input));
+                    if(!matcher.matches()){ i--; break;}
                 }
 
                 boolean isNumeric = true;
                 try{
                     Integer val = Integer.parseInt(value);
-                    tokens.add(new JSONToken(JSONTokenType.NUMBER, val));
+                    tokens.add(new JSONToken(JSONTokenType.INTEGER, val));
                 } catch(NumberFormatException n){
-                    isNumeric = false;
+                    try {
+                        Double val = Double.parseDouble(value);
+                        tokens.add(new JSONToken(JSONTokenType.DOUBLE, val));
+                    } catch (NumberFormatException f){
+                        isNumeric = false;
+                    }
                 }
                 if(!isNumeric){
                     if(value.equalsIgnoreCase("true")){
