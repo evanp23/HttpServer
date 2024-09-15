@@ -116,7 +116,6 @@ public class HttpDecoder {
         try {
             JsonObject jsonObject = new JsonObject(requestBody);
             TestPOJO pojo = (TestPOJO) jsonObject.convertTo(TestPOJO.class);
-            System.out.println("j");
         } catch (Exception e){
             System.out.println(e);
         }

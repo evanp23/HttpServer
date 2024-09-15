@@ -28,4 +28,12 @@ public class TestPOJO {
     public void setNum(Integer num) {
         this.num = num;
     }
+
+    public List<String> getMyList() {
+        return myList;
+    }
+
+    public void setMyList(List<String> myList) {
+        this.myList = myList;
+    }
 }

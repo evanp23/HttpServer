@@ -13,12 +13,15 @@ public class JSONTokenParser {
         while(token.getTokenType() != JSONTokenType.BRACE_CLOSE){
             if(token.getTokenType() == JSONTokenType.STRING){
                 String key = String.valueOf(token.getValue());
+                object.putObjectType(key, token.getTokenType());
                 token = tokens.remove();
                 if(token.getTokenType() != JSONTokenType.COLON){
                     throw new Exception("Expected colon after key: " + key);
                 }
-                Object val = parseJsonValue(tokens.remove(), tokens);
+                JSONToken valToken = tokens.remove();
+                Object val = parseJsonValue(valToken, tokens);
                 object.put(key, val);
+                object.putObjectType(key, valToken.getTokenType());
             }
             else {
                 throw new Exception("Expected String key in object");
@@ -37,6 +40,7 @@ public class JSONTokenParser {
         while(token.getTokenType() != JSONTokenType.BRACKET_CLOSE){
             Object val = parseJsonValue(token, tokens);
             arr.add(val);
+            arr.addTokenType(token.getTokenType());
             token = tokens.remove();
             if(token.getTokenType() == JSONTokenType.COMMA) token = tokens.remove();
         }
