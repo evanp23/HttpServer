@@ -7,10 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class JsonObject extends HashMap<Object, Object> {
 
@@ -29,6 +26,12 @@ public class JsonObject extends HashMap<Object, Object> {
         this.putAll(JSONTokenParser.parseJsonObject(tokenizer.tokenizeJSON()));
     }
 
+    public JsonObject(Object pojo) throws Exception {
+        this.objectTypes = new HashMap<>();
+        JSONTokenizer tokenizer = new JSONTokenizer(pojo);
+        this.putAll(JSONTokenParser.parseJsonObject(tokenizer.tokenizePOJO(null)));
+    }
+
     public Object convertTo(Class clazz) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
         Field [] fields = clazz.getDeclaredFields();
         Object o = clazz.getDeclaredConstructors()[0].newInstance();
@@ -37,8 +40,9 @@ public class JsonObject extends HashMap<Object, Object> {
             String fieldName = field.getName();
             String setterName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
             Object value = this.get(fieldName);
-            o.getClass().getDeclaredMethod(setterName, value.getClass()).invoke(o, value);
-            System.out.println("h");
+            Class valClass = value.getClass();
+            if(value instanceof JsonArray) valClass = List.class;
+            o.getClass().getDeclaredMethod(setterName, valClass).invoke(o, value);
 
         }
         return o;

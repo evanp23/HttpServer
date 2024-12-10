@@ -1,9 +1,12 @@
 package HttpServer.Response;
 
+import HttpServer.JSON.JsonObject;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class HttpResponse {
     private final Map<String, List<String>> responseHeaders;
@@ -63,6 +66,13 @@ public class HttpResponse {
         public Builder setEntity(final Object entity) {
             if (entity != null) {
                 this.entity = Optional.of(entity);
+            }
+            return this;
+        }
+
+        public Builder setEntity(JsonObject entity){
+            if(entity != null){
+                this.entity = Optional.of(entity.toString());
             }
             return this;
         }
