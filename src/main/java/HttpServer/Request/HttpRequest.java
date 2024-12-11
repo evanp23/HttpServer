@@ -1,6 +1,7 @@
 package HttpServer.Request;
 
 import HttpServer.Enums.HttpMethod;
+import HttpServer.JSON.JsonObject;
 
 import java.net.URI;
 import java.util.List;
@@ -30,6 +31,14 @@ public class HttpRequest {
     public Map<String, List<String>> getRequestHeaders(){
         return this.requestHeaders;
     }
+
+
+    public String getRequestBody(){return this.requestBody;}
+
+    public JsonObject getJsonObject() throws Exception {
+        return new JsonObject(this.requestBody);
+    }
+
 
     public static class Builder{
         private HttpMethod httpMethod;

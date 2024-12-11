@@ -113,15 +113,6 @@ public class HttpDecoder {
             if(!bodyLine.isBlank()) requestBody += bodyLine;
         }
 
-        try {
-            JsonObject jsonObject = new JsonObject(requestBody);
-            TestPOJO pojo = (TestPOJO) jsonObject.convertTo(TestPOJO.class);
-            JsonObject pojoObj = new JsonObject(pojo);
-            System.out.println("hello");
-        } catch (Exception e){
-            System.out.println(e);
-        }
-
         return requestBody;
     }
 

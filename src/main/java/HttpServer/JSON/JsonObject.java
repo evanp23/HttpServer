@@ -15,7 +15,9 @@ public class JsonObject extends HashMap<Object, Object> {
 
     private Map<String, JSONTokenType> objectTypes;
 
-    JsonObject() {
+    private Queue<JSONToken> jsonTokens;
+
+    public JsonObject() {
         this.objectTypes = new HashMap<>();
     }
 
@@ -23,13 +25,15 @@ public class JsonObject extends HashMap<Object, Object> {
     public JsonObject(String jsonString) throws Exception {
         this.objectTypes = new HashMap<>();
         JSONTokenizer tokenizer = new JSONTokenizer(jsonString);
-        this.putAll(JSONTokenParser.parseJsonObject(tokenizer.tokenizeJSON()));
+        this.jsonTokens = tokenizer.tokenizeJSON();
+        this.putAll(JSONTokenParser.parseJsonObject(new LinkedList<>(this.jsonTokens)));
     }
 
     public JsonObject(Object pojo) throws Exception {
         this.objectTypes = new HashMap<>();
         JSONTokenizer tokenizer = new JSONTokenizer(pojo);
-        this.putAll(JSONTokenParser.parseJsonObject(tokenizer.tokenizePOJO(null)));
+        this.jsonTokens = tokenizer.tokenizePOJO(null);
+        this.putAll(JSONTokenParser.parseJsonObject(new LinkedList<>(this.jsonTokens)));
     }
 
     public Object convertTo(Class clazz) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
@@ -89,6 +93,38 @@ public class JsonObject extends HashMap<Object, Object> {
 
     public JsonArray getJsonArray(String key){
         return (JsonArray) this.get(key);
+    }
+
+    public Queue<JSONToken> getJsonTokens() {
+        return jsonTokens;
+    }
+
+    public void setJsonTokens(Queue<JSONToken> jsonTokens) {
+        this.jsonTokens = new LinkedList<>(jsonTokens);
+        System.out.println("JsonTokens set : " + jsonTokens);
+    }
+
+    @Override
+    public String toString(){
+        //clone tokens so they are not affected by queue traversal
+        Queue<JSONToken> tokens = new LinkedList<>(jsonTokens);
+
+        StringBuilder jsonString = new StringBuilder();
+
+        while(tokens.peek() != null){
+            JSONToken token = tokens.remove();
+            JSONTokenType tokenType = token.getTokenType();
+            Object value = token.getValue();
+
+            if(tokenType == JSONTokenType.STRING){
+                jsonString.append("\"" + token.getValue() + "\"");
+            }
+            else{
+                jsonString.append(token.getValue());
+            }
+        }
+
+        return jsonString.toString();
     }
 
 }

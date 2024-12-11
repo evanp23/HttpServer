@@ -155,11 +155,11 @@ public class JSONTokenizer {
             }
             //field is an array
             else if(fieldType.isAssignableFrom(List.class)){
-                jsonTokens.add(new JSONToken(JSONTokenType.BRACKET_OPEN, fieldName));
+                jsonTokens.add(new JSONToken(JSONTokenType.BRACKET_OPEN, "["));
                 jsonTokens.addAll(tokenizePOJO((List<Object>) getPOJOValue(getterName)));
-                jsonTokens.add(new JSONToken(JSONTokenType.BRACKET_CLOSE, fieldName));
+                jsonTokens.add(new JSONToken(JSONTokenType.BRACKET_CLOSE, "]"));
             }
-            if(array == null && i != fieldsValues.length - 1) jsonTokens.add(new JSONToken(JSONTokenType.COMMA, ','));
+            if(i != fieldsValues.length - 1) jsonTokens.add(new JSONToken(JSONTokenType.COMMA, ','));
 
 
         }

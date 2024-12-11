@@ -7,7 +7,7 @@ public class TestPOJO {
 
     private Integer num;
 
-    private List<String> myList;
+    private List<Double> myList;
 
     public TestPOJO(){
 
@@ -29,11 +29,11 @@ public class TestPOJO {
         this.num = num;
     }
 
-    public List<String> getMyList() {
+    public List<Double> getMyList() {
         return myList;
     }
 
-    public void setMyList(List<String> myList) {
+    public void setMyList(List<Double> myList) {
         this.myList = myList;
     }
 }

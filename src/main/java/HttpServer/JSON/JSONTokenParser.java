@@ -8,6 +8,7 @@ public class JSONTokenParser {
 
     public static JsonObject parseJsonObject(Queue<JSONToken> tokens) throws Exception {
         JsonObject object = new JsonObject();
+        object.setJsonTokens(tokens);
         JSONToken token = tokens.remove();
         if(token.getTokenType() == JSONTokenType.BRACE_OPEN) token = tokens.remove();
         while(token.getTokenType() != JSONTokenType.BRACE_CLOSE){

@@ -63,7 +63,7 @@ public class HttpResponse {
             return this;
         }
 
-        public Builder setEntity(final Object entity) {
+        public Builder setEntity(final String entity) {
             if (entity != null) {
                 this.entity = Optional.of(entity);
             }
@@ -74,6 +74,18 @@ public class HttpResponse {
             if(entity != null){
                 this.entity = Optional.of(entity.toString());
             }
+            return this;
+        }
+
+        public Builder setEntity(Object pojo){
+            try {
+                if (pojo != null) {
+                    setEntity(new JsonObject(pojo));
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+
             return this;
         }
 
