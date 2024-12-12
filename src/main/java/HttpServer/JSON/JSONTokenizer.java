@@ -1,5 +1,8 @@
 package HttpServer.JSON;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
@@ -9,18 +12,9 @@ import java.util.regex.Pattern;
 
 public class JSONTokenizer {
 
-    String json;
-    Object POJO;
+    protected static final Logger logger = LogManager.getLogger(JSONTokenizer.class);
 
-    public JSONTokenizer(String json){
-        this.json = json;
-    }
-
-    public JSONTokenizer(Object POJO){
-        this.POJO = POJO;
-    }
-
-    public Queue<JSONToken> tokenizeJSON() throws Exception {
+    public static Queue<JSONToken> tokenizeJSON(String json) throws Exception {
         Queue<JSONToken> tokens = new LinkedList<>();
 
 
@@ -97,7 +91,7 @@ public class JSONTokenizer {
         return tokens;
     }
 
-    public Queue<JSONToken> tokenizePOJO(List<Object> array) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    public static Queue<JSONToken> tokenizePOJO(Object POJO, List<Object> array) throws InvocationTargetException, IllegalAccessException, InstantiationException {
         Queue<JSONToken> jsonTokens = new LinkedList<>();
         Object[] fieldsValues;
         if(array == null) {
@@ -130,22 +124,22 @@ public class JSONTokenizer {
 
             //field is a String
             if(fieldType.isAssignableFrom(String.class)){
-                String value = arr ? (String) fieldsValues [i] : (String) getPOJOValue(getterName);
+                String value = arr ? (String) fieldsValues [i] : (String) getPOJOValue(POJO, getterName, fieldName);
                 jsonTokens.add(new JSONToken(JSONTokenType.STRING, value));
             }
             //field is an integer
             else if(fieldType.isAssignableFrom(Integer.class)){
-                Integer value = (Integer) getPOJOValue(getterName);
+                Integer value = (Integer) getPOJOValue(POJO, getterName, fieldName);
                 jsonTokens.add(new JSONToken(JSONTokenType.INTEGER, value));
             }
             //field is a double
             else if(fieldType.isAssignableFrom(Double.class)){
-                Double value = arr ? (Double) fieldsValues [i] :  (Double) getPOJOValue(getterName);
+                Double value = arr ? (Double) fieldsValues [i] :  (Double) getPOJOValue(POJO, getterName, fieldName);
                 jsonTokens.add(new JSONToken(JSONTokenType.DOUBLE, value));
             }
             //field is a boolean
             else if(fieldType.isAssignableFrom(Boolean.class)){
-                Boolean value = arr ? (Boolean) fieldsValues [i] :  (Boolean) getPOJOValue(getterName);
+                Boolean value = arr ? (Boolean) fieldsValues [i] :  (Boolean) getPOJOValue(POJO, getterName, fieldName);
                 if(value) {
                     jsonTokens.add(new JSONToken(JSONTokenType.TRUE, true));
                 }
@@ -156,8 +150,12 @@ public class JSONTokenizer {
             //field is an array
             else if(fieldType.isAssignableFrom(List.class)){
                 jsonTokens.add(new JSONToken(JSONTokenType.BRACKET_OPEN, "["));
-                jsonTokens.addAll(tokenizePOJO((List<Object>) getPOJOValue(getterName)));
+                jsonTokens.addAll(tokenizePOJO(POJO, (List<Object>) getPOJOValue(POJO, getterName, fieldName)));
                 jsonTokens.add(new JSONToken(JSONTokenType.BRACKET_CLOSE, "]"));
+            }
+            //field is (probably) a POJO
+            else{
+                jsonTokens.addAll(tokenizePOJO(getPOJOValue(POJO, getterName, fieldName), null));
             }
             if(i != fieldsValues.length - 1) jsonTokens.add(new JSONToken(JSONTokenType.COMMA, ','));
 
@@ -167,7 +165,13 @@ public class JSONTokenizer {
         return jsonTokens;
     }
 
-    private Object getPOJOValue(String getterName) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        return POJO.getClass().getDeclaredMethod(getterName).invoke(POJO);
+    private static Object getPOJOValue(Object POJO, String getterName, String fieldName) throws  InvocationTargetException, IllegalAccessException {
+        try {
+            return POJO.getClass().getDeclaredMethod(getterName).invoke(POJO);
+        } catch(NoSuchMethodException n){
+            logger.error("No getter for field with name: [" + fieldName + "] found on " + POJO.getClass());
+            n.printStackTrace();
+            return null;
+        }
     }
 }

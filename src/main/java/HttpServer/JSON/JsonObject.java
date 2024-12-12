@@ -4,6 +4,7 @@ package HttpServer.JSON;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -24,29 +25,51 @@ public class JsonObject extends HashMap<Object, Object> {
 
     public JsonObject(String jsonString) throws Exception {
         this.objectTypes = new HashMap<>();
-        JSONTokenizer tokenizer = new JSONTokenizer(jsonString);
-        this.jsonTokens = tokenizer.tokenizeJSON();
+        this.jsonTokens = JSONTokenizer.tokenizeJSON(jsonString);
         this.putAll(JSONTokenParser.parseJsonObject(new LinkedList<>(this.jsonTokens)));
     }
 
     public JsonObject(Object pojo) throws Exception {
         this.objectTypes = new HashMap<>();
-        JSONTokenizer tokenizer = new JSONTokenizer(pojo);
-        this.jsonTokens = tokenizer.tokenizePOJO(null);
+        this.jsonTokens = JSONTokenizer.tokenizePOJO(pojo, null);
         this.putAll(JSONTokenParser.parseJsonObject(new LinkedList<>(this.jsonTokens)));
     }
 
-    public Object convertTo(Class clazz) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
-        Field [] fields = clazz.getDeclaredFields();
+    public Object convertTo(Class clazz) throws InvocationTargetException, IllegalAccessException, InstantiationException {
+        List<Object> jsonProperties = Arrays.asList(this.keySet().toArray());
         Object o = clazz.getDeclaredConstructors()[0].newInstance();
-        for(int i = 0; i < fields.length; i++){
-            Field field = fields[i];
-            String fieldName = field.getName();
-            String setterName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            Object value = this.get(fieldName);
-            Class valClass = value.getClass();
+        for(Object jsonProperty : jsonProperties){
+            String propertyName = (String) jsonProperty;
+            String setterName = "set" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+            Object value = this.get(propertyName);
+            Class valClass = null;
+            Field field = null;
+            try {
+                field = clazz.getDeclaredField(propertyName);
+                valClass = value.getClass();
+            } catch(NoSuchFieldException n){
+                logger.error("No variable with name: [" + propertyName + "]" + " found on " + clazz + ":");
+                n.printStackTrace(System.out);
+                return null;
+            }
             if(value instanceof JsonArray) valClass = List.class;
-            o.getClass().getDeclaredMethod(setterName, valClass).invoke(o, value);
+            if(value instanceof JsonObject){
+                value = ((JsonObject) value).convertTo(field.getType());
+                if(value == null) return null;
+                valClass = value.getClass();
+            }
+            try {
+                o.getClass().getDeclaredMethod(setterName, valClass).invoke(o, value);
+            } catch(NoSuchMethodException n){
+                /*
+                    TODO: Account for these Scenarios:
+                    1. The data type of the value given in the json is not the same as the one declared in the setter method
+                    2. The setter actually doesn't exist (by name)
+                 */
+                logger.error("No setter for property with name: [" + propertyName + "] found on " + clazz + ":");
+                n.printStackTrace(System.out);
+                return null;
+            }
 
         }
         return o;
@@ -101,7 +124,6 @@ public class JsonObject extends HashMap<Object, Object> {
 
     public void setJsonTokens(Queue<JSONToken> jsonTokens) {
         this.jsonTokens = new LinkedList<>(jsonTokens);
-        System.out.println("JsonTokens set : " + jsonTokens);
     }
 
     @Override
@@ -117,10 +139,10 @@ public class JsonObject extends HashMap<Object, Object> {
             Object value = token.getValue();
 
             if(tokenType == JSONTokenType.STRING){
-                jsonString.append("\"" + token.getValue() + "\"");
+                jsonString.append("\"" + value + "\"");
             }
             else{
-                jsonString.append(token.getValue());
+                jsonString.append(value);
             }
         }
 

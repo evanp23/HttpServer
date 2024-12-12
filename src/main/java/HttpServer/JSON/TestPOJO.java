@@ -9,6 +9,8 @@ public class TestPOJO {
 
     private List<Double> myList;
 
+    private OtherTest test;
+
     public TestPOJO(){
 
     }
@@ -35,5 +37,13 @@ public class TestPOJO {
 
     public void setMyList(List<Double> myList) {
         this.myList = myList;
+    }
+
+    public OtherTest getTest() {
+        return test;
+    }
+
+    public void setTest(OtherTest test) {
+        this.test = test;
     }
 }
